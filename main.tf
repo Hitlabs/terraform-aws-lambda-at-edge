@@ -2,13 +2,17 @@
  * Creates a Lambda@Edge function to integrate with CloudFront distributions.
  */
 
+locals{
+  archive_path = "${var.local_file_dir}/${var.name}.zip"
+}
+
 /**
  * Lambdas are uploaded to via zip files, so we create a zip out of a given directory.
  * In the future, we may want to source our code from an s3 bucket instead of a local zip.
  */
 data "archive_file" "zip_file_for_lambda" {
   type        = "zip"
-  output_path = "${var.local_file_dir}/${var.name}.zip"
+  output_path = local.archive_path
 
   dynamic "source" {
     for_each = distinct(flatten([
@@ -59,7 +63,7 @@ resource "aws_lambda_function" "lambda" {
   s3_bucket         = var.s3_artifact_bucket
   s3_key            = aws_s3_object.artifact.id
   s3_object_version = aws_s3_object.artifact.version_id
-  source_code_hash  = filebase64sha256(data.archive_file.zip_file_for_lambda.output_base64sha256)
+  source_code_hash  = filebase64sha256(local.archive_path)
   timeout = var.timeout
   publish = true
   handler = var.handler
