@@ -59,8 +59,7 @@ resource "aws_lambda_function" "lambda" {
   s3_bucket         = var.s3_artifact_bucket
   s3_key            = aws_s3_object.artifact.id
   s3_object_version = aws_s3_object.artifact.version_id
-  source_code_hash  = filebase64sha256(data.archive_file.zip_file_for_lambda.output_path)
-
+  source_code_hash  = filebase64sha256(data.archive_file.zip_file_for_lambda.output_base64sha256)
   timeout = var.timeout
   publish = true
   handler = var.handler
